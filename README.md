@@ -1,7 +1,3 @@
-Absolutely! Here's a more technical, README-style version of your HumanBenchmark-Bot description:
-
----
-
 # HumanBenchmark-Bot
 
 **HumanBenchmark-Bot** is an automated tool that performs all tests on [HumanBenchmark.com](https://humanbenchmark.com) using web element interactions. It supports multiple browsers and provides high or infinite scores across all available benchmarks.
