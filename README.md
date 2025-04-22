@@ -1,7 +1,3 @@
-Absolutely! Here's a more technical, README-style version of your HumanBenchmark-Bot description:
-
----
-
 # HumanBenchmark-Bot
 
 **HumanBenchmark-Bot** is an automated tool that performs all tests on [HumanBenchmark.com](https://humanbenchmark.com) using web element interactions. It supports multiple browsers and provides high or infinite scores across all available benchmarks.
@@ -12,8 +8,7 @@ Absolutely! Here's a more technical, README-style version of your HumanBenchmark
 - Cross-browser support (Firefox, Chrome, Edge)  
 - Achieves near-perfect or infinite scores  
 - Custom level selection for applicable tests  
-- Lightweight: no pre-installed browsers required  
-- Non-intrusive: can run in the background
+p- Non-intrusive: can run in the background
 
 ## How It Works
 
@@ -23,8 +18,6 @@ Absolutely! Here's a more technical, README-style version of your HumanBenchmark
    - `Firefox`  
    - `Edge`  
    
-   > Note: You do not need to have the selected browser installed.
-
 2. **Mode Selection**  
    Next, the bot will ask for the desired test mode.
 
