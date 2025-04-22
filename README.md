@@ -8,7 +8,7 @@
 - Cross-browser support (Firefox, Chrome, Edge)  
 - Achieves near-perfect or infinite scores  
 - Custom level selection for applicable tests  
-p- Non-intrusive: can run in the background
+- Non-intrusive: can run in the background
 
 ## How It Works
 
