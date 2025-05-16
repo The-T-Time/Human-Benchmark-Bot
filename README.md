@@ -48,13 +48,13 @@
 The bot in action:
 
 ### Reaction Time
-![Reaction Time](video/reactiontime.gif)
+![Reaction Time](video/Reactiontime.gif)
 
 ### Sequence Memory
 ![Sequence Memory](video/sequencememory.gif)
 
 ### Aim Trainer
-![Aim Trainer](video/aimtrainer.gif)
+![Aim Trainer](video/Aimtrainer.gif)
 
 ### Number Memory
 ![Number Memory](video/numbermemory.gif)
@@ -63,13 +63,13 @@ The bot in action:
 ![Verbal Memory](video/verbalmemory.gif)
 
 ### Chimp Test
-![Chimp Test](video/chimptest.gif)
+![Chimp Test](video/Chimptest.gif)
 
 ### Visual Memory
-![Visual Memory](video/viisualmemory.gif)
+![Visual Memory](video/Visualmemory.gif)
 
 ### Typing Test
-![Typing Test](video/typingtest.gif)
+![Typing Test](video/Typingtest.gif)
 
 ## Requirements
 
