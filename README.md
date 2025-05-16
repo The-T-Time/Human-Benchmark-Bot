@@ -44,6 +44,38 @@
 | Visual Memory     | Infinite     |
 | Typing Test       | 100%         |
 
+
+The bot in action:
+
+### Reaction Time
+![Reaction Time](video/reactiontime.gif)
+
+### Sequence Memory
+![Sequence Memory](video/sequencememory.gif)
+
+### Aim Trainer
+![Aim Trainer](video/aimtrainer.gif)
+
+### Number Memory
+![Number Memory](video/numbermemory.gif)
+
+### Verbal Memory
+![Verbal Memory](video/verbalmemory.gif)
+
+### Chimp Test
+![Chimp Test](video/chimptest.gif)
+
+### Visual Memory
+![Visual Memory](video/viisualmemory.gif)
+
+### Typing Test
+![Typing Test](video/typingtest.gif)
+
 ## Requirements
 
 - Selenium
+
+## License
+
+This project is licensed under the [MIT License](LICENSE).
+
