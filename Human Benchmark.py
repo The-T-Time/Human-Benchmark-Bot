@@ -182,8 +182,7 @@ def run_test(browser_choice, driver=None):
 
 def main():
     while True:
-        browser_choice = input("Choose driver (Firefox, Chrome, Edge): ")\
-                         .lower().replace(" ", "")
+        browser_choice = input("Choose driver (Firefox, Chrome, Edge): ").lower().replace(" ", "")
         if browser_choice in browsers:
             break
         print("Invalid driver.")
