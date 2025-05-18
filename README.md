@@ -2,6 +2,8 @@
 
 **HumanBenchmark-Bot** is an automated tool that performs all tests on [HumanBenchmark.com](https://humanbenchmark.com) using web element interactions. It supports multiple browsers and provides high or infinite scores across all available benchmarks.
 
+Im planning on working on a popup version for the inputs instead of the terminal.
+
 ## Features
 
 - Fully automates all Human Benchmark tests  
