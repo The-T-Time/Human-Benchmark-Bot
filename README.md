@@ -51,16 +51,16 @@ The bot in action:
 ![Reaction Time](video/Reactiontime.gif)
 
 ### Sequence Memory
-![Sequence Memory](video/sequencememory.gif)
+![Sequence Memory](video/Sequencememory.gif)
 
 ### Aim Trainer
 ![Aim Trainer](video/Aimtrainer.gif)
 
 ### Number Memory
-![Number Memory](video/numbermemory.gif)
+![Number Memory](video/Numbermemory.gif)
 
 ### Verbal Memory
-![Verbal Memory](video/verbalmemory.gif)
+![Verbal Memory](video/Verbalmemory.gif)
 
 ### Chimp Test
 ![Chimp Test](video/Chimptest.gif)
@@ -74,6 +74,13 @@ The bot in action:
 ## Requirements
 
 - Selenium
+
+## Contributing
+
+Contributions are welcome! Feel free to:
+
+- Open issues for bugs or feature requests.
+- Submit pull requests with enhancements or fixes.
 
 ## License
 
