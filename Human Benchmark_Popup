@@ -1,0 +1,399 @@
+import time
+import tkinter as tk
+from tkinter import ttk, messagebox
+import threading
+from selenium import webdriver
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+
+BASE_URL = "https://humanbenchmark.com/tests/"
+
+class HumanBenchmarkBot:
+    def __init__(self, driver):
+        self.driver = driver
+        self.driver.maximize_window()
+        self.stop_requested = False
+
+    def stop_bot(self):
+        self.stop_requested = True
+
+    def navigate_to_test(self, test_name):
+        if self.stop_requested:
+            return False
+        self.driver.get(f"{BASE_URL}{test_name}")
+        WebDriverWait(self.driver, 10).until(
+            EC.presence_of_element_located((By.TAG_NAME, "body"))
+        )
+        return True
+
+    def reaction_time(self, lvls=5):
+        if not self.navigate_to_test("reactiontime"):
+            return
+
+        self.driver.find_element(By.CLASS_NAME, 'view-splash').click()
+
+        for num in range(lvls):
+            if self.stop_requested:
+                return
+            WebDriverWait(self.driver, 10).until(
+                EC.element_to_be_clickable((By.CLASS_NAME, 'view-go'))
+            ).click()
+            if num != lvls - 1:
+                self.driver.find_element(By.CLASS_NAME, 'view-result').click()
+
+    def sequence_memory(self, lvls):
+        if not self.navigate_to_test("sequence"):
+            return
+
+        self.driver.find_element(By.XPATH, "//button[contains(text(), 'Start')]").click()
+
+        for num_squares in range(1, lvls + 1):
+            if self.stop_requested:
+                return
+            sequence, last_active = [], None
+            while len(sequence) < num_squares:
+                if self.stop_requested:
+                    return
+                active = self.driver.find_elements(By.CSS_SELECTOR, "div.square.active")
+                if active:
+                    square = active[0]
+                    if last_active is None or square != last_active:
+                        sequence.append(square)
+                    last_active = square
+            time.sleep(1)
+            for el in sequence:
+                if self.stop_requested:
+                    return
+                el.click()
+
+    def aim_trainer(self):
+        if not self.navigate_to_test("aim"):
+            return
+
+        for _ in range(31):
+            if self.stop_requested:
+                return
+            target = self.driver.find_element(By.CSS_SELECTOR, '[data-aim-target="true"]')
+            self.driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", target)
+            self.driver.execute_script(
+                """
+                var elem = arguments[0];
+                ['mousedown', 'mouseup', 'click'].forEach(function(evtType) {
+                    var event = new MouseEvent(evtType, {view: window, bubbles: true, cancelable: true});
+                    elem.dispatchEvent(event);
+                });
+                """, target)
+
+    def number_memory(self, lvls):
+        if not self.navigate_to_test("number-memory"):
+            return
+
+        self.driver.find_element(By.XPATH, "//button[contains(text(), 'Start')]").click()
+
+        for num in range(lvls):
+            if self.stop_requested:
+                return
+            number = self.driver.find_element(By.CLASS_NAME, 'big-number').text
+            input_field = WebDriverWait(self.driver, 100).until(
+                EC.element_to_be_clickable((By.CSS_SELECTOR, "input[type='text']"))
+            )
+            input_field.send_keys(number)
+            self.driver.find_element(By.XPATH, "//button[contains(text(), 'Submit')]").click()
+            if num != lvls - 1:
+                self.driver.find_element(By.XPATH, "//button[contains(text(), 'NEXT')]").click()
+
+    def verbal_memory(self, lvls):
+        if not self.navigate_to_test("verbal-memory"):
+            return
+
+        seen = set()
+        self.driver.find_element(By.XPATH, "//button[contains(text(),'Start')]").click()
+
+        for _ in range(lvls):
+            if self.stop_requested:
+                return
+            word = self.driver.find_element(By.CLASS_NAME, 'word').text
+            if word in seen:
+                self.driver.find_element(By.XPATH, "//button[contains(text(),'SEEN')]").click()
+            else:
+                seen.add(word)
+                self.driver.find_element(By.XPATH, "//button[contains(text(),'NEW')]").click()
+
+    def chimp_test(self, lvls):
+        if not self.navigate_to_test("chimp"):
+            return
+
+        self.driver.find_element(By.XPATH, "//button[contains(text(), 'Start Test')]").click()
+
+        for num in range(lvls):
+            if self.stop_requested:
+                return
+            for i in range(1, 5 + num):
+                if self.stop_requested:
+                    return
+                self.driver.find_element(By.XPATH, f'//div[@data-cellnumber="{i}"]').click()
+            if num != lvls - 1:
+                self.driver.find_element(By.XPATH, "//button[contains(text(), 'Continue')]").click()
+
+    def visual_memory(self, lvls):
+        if not self.navigate_to_test("memory"):
+            return
+
+        self.driver.find_element(By.XPATH, "//button[contains(text(), 'Start')]").click()
+        count = 3
+        for _ in range(lvls):
+            if self.stop_requested:
+                return
+            active = []
+            while len(active) != count:
+                if self.stop_requested:
+                    return
+                active = self.driver.find_elements(By.CSS_SELECTOR, 'div.active')
+            time.sleep(1.25)
+            for el in active:
+                if self.stop_requested:
+                    return
+                el.click()
+            count += 1
+
+    def typing(self):
+        if not self.navigate_to_test("typing"):
+            return
+
+        raw = self.driver.find_elements(By.XPATH, '//*[@id="root"]/div/div[4]/div[1]/div/div[2]/div/span')
+        text = ''.join([c.text or ' ' for c in raw])
+        self.driver.find_element(By.CSS_SELECTOR, ".letters.notranslate").send_keys(text)
+
+class HumanBenchmarkGUI:
+    def __init__(self):
+        self.root = tk.Tk()
+        self.root.title("Human Benchmark Bot")
+        self.root.geometry("320x280")
+        self.root.resizable(False, False)
+
+        #Browser factories
+        self.browsers = {
+            'Firefox': lambda: webdriver.Firefox(),
+            'Chrome':  lambda: webdriver.Chrome(),
+            'Edge':    lambda: webdriver.Edge()
+        }
+
+        #Display name → endpoint key
+        self.tests = {
+            'Reaction Time':   'reactiontime',
+            'Sequence Memory': 'sequence',
+            'Aim Trainer':     'aim',
+            'Number Memory':   'number-memory',
+            'Verbal Memory':   'verbal-memory',
+            'Chimp Test':      'chimp',
+            'Visual Memory':   'memory',
+            'Typing':          'typing'
+        }
+
+        #Endpoints that need levels
+        self.level_based_tests = {'sequence', 'number-memory', 'verbal-memory', 'chimp', 'memory'}
+
+        self.driver = None
+        self.bot = None
+        self.bot_thread = None
+
+        self.setup_ui()
+
+    def setup_ui(self):
+        frame = ttk.Frame(self.root, padding="15")
+        frame.grid(sticky=(tk.W, tk.E, tk.N, tk.S))
+
+        #Title
+        ttk.Label(frame, text="Human Benchmark Bot", font=("Arial", 14, "bold")).grid(
+            row=0, column=0, columnspan=2, pady=(0,15)
+        )
+
+        #Browser selection
+        ttk.Label(frame, text="Browser:", width=8).grid(row=1, column=0, sticky=tk.W, pady=3)
+        self.browser_var = tk.StringVar(value="Chrome")
+        ttk.Combobox(frame, textvariable=self.browser_var, values=list(self.browsers), 
+                    state="readonly", width=18).grid(row=1, column=1, sticky=tk.W)
+
+        #Test selection
+        ttk.Label(frame, text="Test:", width=8).grid(row=2, column=0, sticky=tk.W, pady=3)
+        self.test_var = tk.StringVar(value="Reaction Time")
+        test_combo = ttk.Combobox(frame, textvariable=self.test_var, 
+                                 values=list(self.tests), state="readonly", width=18)
+        test_combo.grid(row=2, column=1, sticky=tk.W)
+        test_combo.bind('<<ComboboxSelected>>', self.on_test_change)
+
+        #Level selector frame
+        self.level_frame = ttk.Frame(frame)
+        self.level_frame.grid(row=3, column=0, columnspan=2, pady=8, sticky=tk.W)
+        
+        ttk.Label(self.level_frame, text="Levels:", width=8).grid(row=0, column=0, sticky=tk.W)
+        self.level_var = tk.StringVar(value="5")
+        level_entry = ttk.Entry(self.level_frame, textvariable=self.level_var, width=8)
+        level_entry.grid(row=0, column=1, sticky=tk.W)
+        level_entry.bind('<KeyRelease>', self.validate_level_on_type)
+        
+        self.error_label = ttk.Label(self.level_frame, text="", foreground="red", font=("Arial", 8))
+        self.error_label.grid(row=1, column=0, columnspan=2, sticky=tk.W, pady=(2,0))
+
+        #Initially set visibility
+        self.on_test_change()
+
+        #Button frame
+        btn_frame = ttk.Frame(frame)
+        btn_frame.grid(row=4, column=0, columnspan=2, pady=15)
+        
+        self.start_btn = ttk.Button(btn_frame, text="Start Bot", command=self.start_bot)
+        self.start_btn.grid(row=0, column=0, padx=3)
+        
+        self.stop_btn = ttk.Button(btn_frame, text="Stop Bot", command=self.stop_bot, state="disabled")
+        self.stop_btn.grid(row=0, column=1, padx=3)
+        
+        self.close_btn = ttk.Button(btn_frame, text="Stop & Close", command=self.stop_and_close, state="disabled")
+        self.close_btn.grid(row=0, column=2, padx=3)
+
+        #Status
+        self.status_label = ttk.Label(frame, text="Ready to start", font=("Arial", 9))
+        self.status_label.grid(row=5, column=0, columnspan=2, pady=(5,0))
+
+    def on_test_change(self, event=None):
+        endpoint = self.tests[self.test_var.get()]
+        if endpoint in self.level_based_tests:
+            self.level_frame.grid()
+            self.validate_level_on_type()
+        else:
+            self.level_frame.grid_remove()
+
+    def validate_level_on_type(self, event=None):
+        self.validate_level()
+
+    def validate_level(self):
+        level_str = self.level_var.get().strip()
+        if not level_str:
+            self.error_label.config(text="")
+            return False
+            
+        try:
+            lvl = int(level_str)
+            if lvl <= 0:
+                self.error_label.config(text="Must be greater than 0")
+                return False
+            if self.tests[self.test_var.get()] == 'chimp' and lvl > 37:
+                self.error_label.config(text="Chimp Test max is 37")
+                return False
+            self.error_label.config(text="")
+            return True
+        except ValueError:
+            self.error_label.config(text="Enter a valid number")
+            return False
+
+    def get_test_method(self, endpoint):
+        #Method mapping
+        methods = {
+            'reactiontime':    self.bot.reaction_time,
+            'sequence':        self.bot.sequence_memory,
+            'aim':             self.bot.aim_trainer,
+            'number-memory':   self.bot.number_memory,
+            'verbal-memory':   self.bot.verbal_memory,
+            'chimp':           self.bot.chimp_test,
+            'memory':          self.bot.visual_memory,
+            'typing':          self.bot.typing
+        }
+        return methods.get(endpoint)
+
+    def start_bot(self):
+        endpoint = self.tests[self.test_var.get()]
+        
+        #Validate level input for level-based tests
+        if endpoint in self.level_based_tests and not self.validate_level():
+            return
+
+        try:
+            #Initialize browser if needed
+            if not self.driver:
+                self.update_status("Starting browser...")
+                self.driver = self.browsers[self.browser_var.get()]()
+
+            #Create bot instance
+            self.bot = HumanBenchmarkBot(self.driver)
+
+            #Update UI state
+            self.toggle_buttons('running')
+            self.update_status("Bot running...")
+
+            #Start bot thread
+            self.bot_thread = threading.Thread(target=self.run_bot_thread, daemon=True)
+            self.bot_thread.start()
+
+        except Exception as e:
+            messagebox.showerror("Error", f"Failed to start bot: {e}")
+            self.toggle_buttons('ready')
+
+    def run_bot_thread(self):
+        try:
+            endpoint = self.tests[self.test_var.get()]
+            method = self.get_test_method(endpoint)
+            
+            if endpoint in self.level_based_tests:
+                method(int(self.level_var.get()))
+            else:
+                method()
+                
+            self.root.after(0, self.bot_finished)
+        except Exception as e:
+            self.root.after(0, lambda: self.bot_error(str(e)))
+
+    def bot_finished(self):
+        self.update_status("Bot finished!")
+        self.toggle_buttons('ready')
+
+    def bot_error(self, msg):
+        messagebox.showerror("Bot Error", f"Bot encountered an error: {msg}")
+        self.update_status("Bot stopped due to error")
+        self.toggle_buttons('ready')
+
+    def stop_bot(self):
+        if self.bot:
+            self.bot.stop_bot()
+            self.update_status("Stopping bot...")
+        self.toggle_buttons('ready')
+
+    def stop_and_close(self):
+        if self.bot:
+            self.bot.stop_bot()
+        if self.driver:
+            self.driver.quit()
+            self.driver = None
+        self.update_status("Browser closed")
+        self.toggle_buttons('ready')
+
+    def toggle_buttons(self, state):
+        #State can be 'ready' or 'running'
+        if state == 'ready':
+            self.start_btn.config(state="normal")
+            self.stop_btn.config(state="disabled")
+            self.close_btn.config(state="disabled")
+        elif state == 'running':
+            self.start_btn.config(state="disabled")
+            self.stop_btn.config(state="normal")
+            self.close_btn.config(state="normal")
+
+    def update_status(self, text):
+        self.status_label.config(text=text)
+        self.root.update_idletasks()
+
+    def run(self):
+        self.root.protocol("WM_DELETE_WINDOW", self.on_closing)
+        self.root.mainloop()
+
+    def on_closing(self):
+        #Clean shutdown
+        if self.bot:
+            self.bot.stop_bot()
+        if self.driver:
+            self.driver.quit()
+        self.root.destroy()
+
+if __name__ == "__main__":
+    app = HumanBenchmarkGUI()
+    app.run()
